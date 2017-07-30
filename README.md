@@ -15,3 +15,21 @@ Lint
 Start the server
 
 `yarn start`
+
+## Endpoints
+
+### GET /
+
+Responds with `{ items: [...] }`
+
+### GET /add?item=:text
+
+Accepts a GET param `item`
+
+Responds with `{ message: ..., item: ... }`
+
+### GET /delete?id=:id
+
+Accepts a GET param `id`
+
+Responds with `{ message: ... }`

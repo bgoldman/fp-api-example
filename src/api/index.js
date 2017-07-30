@@ -2,11 +2,9 @@ import Item from '../models/item';
 
 const api = router =>
   router
-    .get('/', ({ respond }) => respond(200, 'I like turtles.'))
-    .get('/echo', ({ request, respond }) =>
-      respond(200, `You entered: ${request.query.echo}`),
+    .get('/', async ({ respond }) =>
+      respond(200, { items: await Item.findAll() }),
     )
-    .get('/foo', ({ respond }) => respond(200, 'Bar.'))
     .get('/add', async ({ request, respond }) => {
       const missingItem = () =>
         respond(400, {
@@ -24,9 +22,6 @@ const api = router =>
 
       return !request.query.item ? missingItem() : createItem().then(created);
     })
-    .get('/get', async ({ respond }) =>
-      respond(200, { items: await Item.findAll() }),
-    )
     .get('/delete', async ({ request, respond }) => {
       const missingId = () =>
         respond(400, { error: true, message: 'Must enter the item ID.' });
