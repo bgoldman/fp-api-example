@@ -30,6 +30,7 @@
     "eslint-plugin-prettier": "^2.1.2",
     "eslint-plugin-react": "^7.1.0",
     "nodemon": "^1.11.0",
+    "pre-commit": "^1.2.2",
     "prettier": "^1.5.3"
   },
   "engines": {
@@ -38,6 +39,7 @@
   "scripts": {
     "start": "nodemon server.js --ignore _build --exec babel-node",
     "lint": "yarn run lint:js",
-    "lint:js": "eslint src --ext=js,jsx --fix"
+    "lint:js": "eslint src --ext=js,jsx --fix",
+    "test": "yarn run lint"
   }
 }
