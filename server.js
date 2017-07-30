@@ -1,30 +1,33 @@
 import http from 'http';
 
-import api from './api';
-import cache from './cache';
-import db, { dbInit } from './db';
-import router from './router';
-
-/* eslint-disable no-console */
+import api from './src/api';
+import cache from './src/lib/cache';
+import { dbInit } from './src/lib/db';
+import { log, responsify } from './src/lib/fp';
+import router from './src/lib/router';
 
 const main = async () => {
   const server = http.createServer();
 
-  console.log('Connecting to db...');
-  await dbInit();
-  console.log('...connected.');
-
-  console.log('Connecting to cache...');
-  await cache();
-  console.log('...connected.');
+  const connected =
+    log('Connecting to db...') &&
+    (await dbInit()) &&
+    log('...connected.') &&
+    log('Connecting to cache...') &&
+    (await cache()) &&
+    log('...connected.');
 
   const route = router(api);
 
-  server.on('request', (request, response) => route(request, response));
+  const started =
+    server.on('request', (request, response) =>
+      route(request, responsify(response)),
+    ) &&
+    log('Starting server...') &&
+    (await server.listen(3200, 'localhost')) &&
+    log('...started.');
 
-  console.log('Starting server...');
-  await server.listen(3200, 'localhost');
-  console.log('...started.');
+  return connected && started;
 };
 
-main();
+main(); // eslint-disable-line fp/no-unused-expression

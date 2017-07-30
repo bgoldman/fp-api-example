@@ -1,4 +1,4 @@
-import askify from './magic';
+import askify from '../lib/magic';
 
 const Item = {
   create: askify(async ({ ask, item: text }) => {

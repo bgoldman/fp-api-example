@@ -1,6 +1,7 @@
 import qs from 'qs';
-import { static as Immutable } from 'seamless-immutable';
 import url from 'url';
+
+import { static as Immutable } from 'seamless-immutable';
 
 const define = (method, path, handler, routes) =>
   Immutable.merge(
@@ -19,15 +20,11 @@ const createRouteMethods = {
   put: (path, handler, routes) => define('put', path, handler, routes),
 };
 
-const respond = response => (code, body) => {
-  response.setHeader('Content-Type', 'application/json');
-
-  response.statusCode = code;
-
-  response.end(JSON.stringify(body));
-
-  return true;
-};
+const respond = response => (code, body) =>
+  response
+    .setHeader('Content-Type', 'application/json')
+    .statusCode(code)
+    .end(JSON.stringify(body));
 
 const createRouter = routes => (request, response) => {
   const method = request.method.toLowerCase();

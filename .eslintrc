@@ -15,5 +15,5 @@
       "trailingComma": "all"
     }]
   },
-  "extends": ["airbnb-base", "prettier", "prettier/react"]
+  "extends": ["cleanjs", "prettier"]
 }

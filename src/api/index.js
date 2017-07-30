@@ -1,4 +1,4 @@
-import Item from './item';
+import Item from '../models/item';
 
 const api = router =>
   router
