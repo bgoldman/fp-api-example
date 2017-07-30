@@ -1,7 +1,7 @@
 {
-  "name": "fp-web-server",
+  "name": "fp-api-example",
   "version": "0.1.0",
-  "description": "FP Web Server",
+  "description": "FP API Example",
   "main": "server.js",
   "author": "Brandon Goldman",
   "license": "MIT",
