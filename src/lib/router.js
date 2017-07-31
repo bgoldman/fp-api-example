@@ -39,7 +39,7 @@ const createRouter = routes => (request, response) => {
     ? handler({ request: { ...request, query }, respond: respond(response) })
     : respond(response)(404, {
         error: true,
-        message: 'Not found.',
+        message: 'Route not found.',
       });
 };
 
