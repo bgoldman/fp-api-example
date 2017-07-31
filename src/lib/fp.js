@@ -16,17 +16,12 @@ const fpSqlite3 = {
 
       return conn.oldRun(query, params, function runCallback(error) {
         // eslint-disable-next-line fp/no-this
-        return callback(error, this && this.lastID);
+        return callback(error, (this && this.lastID) || this.lastID === 0);
       });
     };
 
     return conn;
   },
-};
-
-const fpPromise = {
-  // eslint-disable-next-line better/no-new
-  new: callback => new Promise(callback),
 };
 
 const log = message => {
@@ -54,4 +49,4 @@ const responsify = response => ({
   },
 });
 
-export { log, responsify, fpSqlite3 as sqlite3, fpPromise as Promise };
+export { log, responsify, fpSqlite3 as sqlite3 };

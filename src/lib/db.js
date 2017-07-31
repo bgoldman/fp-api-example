@@ -1,33 +1,25 @@
 import promisify from 'es6-promisify';
-import { sqlite3, Promise } from './fp';
+import { sqlite3 } from './fp';
 
 const db = sqlite3.Database('db.sqlite');
 
 const promisifiedDb = {
   all: promisify(db.all, db),
   get: promisify(db.get, db),
-
-  run: (query, params = {}) =>
-    Promise.new((resolve, reject) =>
-      db.run(
-        query,
-        params,
-        (error, lastId) => (error ? reject(error) : resolve(lastId || true)),
-      ),
-    ),
+  run: promisify(db.run, db),
 };
 
-const dbInit = () =>
-  Promise.new(resolve =>
-    db.run(
-      'CREATE TABLE items (' +
-        '  id INTEGER PRIMARY KEY ASC' +
-        '  ,item STRING' +
-        ')',
-      () =>
-        // an error just means this means the table already exists, no big deal
-        resolve(true),
-    ),
+// return true at the end even if CREATE TABLE fails because the table probably
+// already exists - the first statement checks if the database is up and will
+// throw an exception if it isn't
+const dbInit = async () =>
+  (await promisifiedDb.get('SELECT 1 + 1'))['1 + 1'] === 2 &&
+  db.get(
+    'CREATE TABLE items (' +
+      '  id INTEGER PRIMARY KEY ASC' +
+      '  ,item STRING' +
+      ')',
+    () => true,
   );
 
 export { dbInit };
