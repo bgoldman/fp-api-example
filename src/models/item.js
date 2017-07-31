@@ -3,7 +3,7 @@ import askify from '../lib/magic';
 const cacheKey = id => `item-${id}`;
 
 const Item = {
-  create: askify(async ({ ask, item: text }) => {
+  create: askify(ask => async ({ item: text }) => {
     const id = await ask('db').run('INSERT INTO items (item) VALUES ($item)', {
       $item: text,
     });
@@ -20,7 +20,7 @@ const Item = {
     return cached && item;
   }),
 
-  delete: askify(async ({ ask, item }) => {
+  delete: askify(ask => async ({ item }) => {
     const deleted = await ask('db').run('DELETE FROM items WHERE id = $id', {
       $id: item.id,
     });
@@ -30,11 +30,11 @@ const Item = {
     return deleted && cacheDeleted;
   }),
 
-  findAll: askify(({ ask }) =>
+  findAll: askify(ask => () =>
     ask('db').all('SELECT * FROM items ORDER BY item'),
   ),
 
-  findById: askify(async ({ ask, id }) => {
+  findById: askify(ask => async ({ id }) => {
     const cached = await ask('cache').get(cacheKey(id));
 
     const find = ask('db').get('SELECT * FROM items WHERE id = $id', {
