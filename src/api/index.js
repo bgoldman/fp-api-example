@@ -12,22 +12,25 @@ const notFound = respond =>
   respond(400, { error: true, message: 'Item not found.' });
 
 const api = router =>
-  router
+      router
+    // well this is mutation for sure. `router` must be a registry of some kind.
+    // either wrap the mutation in a Thunk or get rid of it somehow.
     .get('/', async ({ respond }) =>
       respond(200, { items: await Item.findAll() }),
     )
     .get('/items', async ({ request, respond }) => {
+      // This pattern is very attractive to me.
       const found = item => respond(200, { item });
 
       return (
-        (!request.query.id && missingId(respond)) ||
+        (!request.query.id && missingId(respond)) || // badly typed usage of `||`, use Alternative instead
         findItem(request.query.id).then(
           item => (!item && notFound(respond)) || found(item),
         )
       );
     })
     .get('/items/add', async ({ request, respond }) => {
-      const missingItem = () =>
+      const missingItem = () => // yay! more natural lazyness!
         respond(400, {
           error: true,
           message: 'Send the query param `item` with the new item text.',
@@ -41,7 +44,7 @@ const api = router =>
           item,
         });
 
-      return !request.query.item ? missingItem() : createItem().then(created);
+        return !request.query.item ? missingItem() : createItem().then(created); // Perfect!
     })
     .get('/items/delete', async ({ request, respond }) => {
       const del = item => Item.delete({ item });
@@ -51,7 +54,8 @@ const api = router =>
           message: `Deleted ${item} (id=${id})`,
         });
 
-      return (
+        return (
+         // Alternative here also. Only use || and && when both sides are bools. Not falsy truthy, booleans only.
         (!request.query.id && missingId(respond)) ||
         findItem(request.query.id).then(
           async item =>

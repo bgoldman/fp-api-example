@@ -1,5 +1,7 @@
 import sqlite3 from 'sqlite3';
 
+// Is reasonable. I get how this has to be here because of the language.
+
 const fpSqlite3 = {
   Database: connectionString => {
     // eslint-disable-next-line better/no-new
