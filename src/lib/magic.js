@@ -7,6 +7,6 @@ const store = { cache, db };
 
 const ask = key => store[key]();
 
-const magic = method => args => method(Immutable.set(args || {}, 'ask', ask));
+const askify = method => args => method(Immutable.set(args || {}, 'ask', ask));
 
-export default magic;
+export default askify;
