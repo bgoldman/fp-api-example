@@ -3,7 +3,10 @@ import Item from '../models/item';
 const findItem = id => Item.findById({ id });
 
 const missingId = respond =>
-  respond(400, { error: true, message: 'Must enter the item ID.' });
+  respond(400, {
+    error: true,
+    message: 'Send the query param `id` with the item ID.',
+  });
 
 const notFound = respond =>
   respond(400, { error: true, message: 'Item not found.' });
@@ -27,7 +30,7 @@ const api = router =>
       const missingItem = () =>
         respond(400, {
           error: true,
-          message: 'Send the query param "item" with the new item text.',
+          message: 'Send the query param `item` with the new item text.',
         });
 
       const createItem = () => Item.create({ item: request.query.item });
@@ -35,7 +38,7 @@ const api = router =>
       const created = item =>
         respond(200, {
           message: `Added item.`,
-          item: { ...item },
+          item,
         });
 
       return !request.query.item ? missingItem() : createItem().then(created);
@@ -43,9 +46,9 @@ const api = router =>
     .get('/items/delete', async ({ request, respond }) => {
       const del = item => Item.delete({ item });
 
-      const deleted = item =>
+      const deleted = ({ id, item }) =>
         respond(200, {
-          message: `Deleted ${item.item} (id=${item.id})`,
+          message: `Deleted ${item} (id=${id})`,
         });
 
       return (
