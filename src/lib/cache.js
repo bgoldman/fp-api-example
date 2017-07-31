@@ -2,12 +2,11 @@ import promisify from 'es6-promisify';
 
 import Redis from 'ioredis';
 
-const cache = () => Redis();
+const cache = Redis(6379, '127.0.0.1');
 
-const conn = cache();
-
-const cacheInit = () => promisify(conn.get, conn).get('a-fake-key') || true;
+const cacheInit = async () =>
+  (await promisify(cache.get, cache)('a-fake-key')) || true;
 
 export { cacheInit };
 
-export default () => conn;
+export default () => cache;

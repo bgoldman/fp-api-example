@@ -1,11 +1,29 @@
 import Item from '../models/item';
 
+const findItem = id => Item.findById({ id });
+
+const missingId = respond =>
+  respond(400, { error: true, message: 'Must enter the item ID.' });
+
+const notFound = respond =>
+  respond(400, { error: true, message: 'Item not found.' });
+
 const api = router =>
   router
     .get('/', async ({ respond }) =>
       respond(200, { items: await Item.findAll() }),
     )
-    .get('/add', async ({ request, respond }) => {
+    .get('/items', async ({ request, respond }) => {
+      const found = item => respond(200, { item });
+
+      return (
+        (!request.query.id && missingId(respond)) ||
+        findItem(request.query.id).then(
+          item => (!item && notFound(respond)) || found(item),
+        )
+      );
+    })
+    .get('/items/add', async ({ request, respond }) => {
       const missingItem = () =>
         respond(400, {
           error: true,
@@ -22,15 +40,7 @@ const api = router =>
 
       return !request.query.item ? missingItem() : createItem().then(created);
     })
-    .get('/delete', async ({ request, respond }) => {
-      const missingId = () =>
-        respond(400, { error: true, message: 'Must enter the item ID.' });
-
-      const findItem = () => Item.findById({ id: request.query.id });
-
-      const notFound = () =>
-        respond(400, { error: true, message: 'Item not found.' });
-
+    .get('/items/delete', async ({ request, respond }) => {
       const del = item => Item.delete({ item });
 
       const deleted = item =>
@@ -39,10 +49,11 @@ const api = router =>
         });
 
       return (
-        (!request.query.id && missingId()) ||
-        findItem().then(
+        (!request.query.id && missingId(respond)) ||
+        findItem(request.query.id).then(
           async item =>
-            (!item && notFound()) || ((await del(item)) && deleted(item)),
+            (!item && notFound(respond)) ||
+            ((await del(item)) && deleted(item)),
         )
       );
     });

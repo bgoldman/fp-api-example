@@ -37,7 +37,10 @@ const createRouter = routes => (request, response) => {
 
   return handler
     ? handler({ request: { ...request, query }, respond: respond(response) })
-    : respond(response)(404, 'Not found.');
+    : respond(response)(404, {
+        error: true,
+        message: 'Not found.',
+      });
 };
 
 const chain = routes =>
