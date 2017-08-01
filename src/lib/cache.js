@@ -11,4 +11,4 @@ const cacheInit = async () =>
 
 export { cacheInit };
 
-export default () => cache;
+export default cache;

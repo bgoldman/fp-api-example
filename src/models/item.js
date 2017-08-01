@@ -1,52 +1,50 @@
-import askify from '../lib/magic';
+import connect from '../lib/connect';
 
 const cacheKey = id => `item-${id}`;
 
+const cacheItem = connect(({ cache }) => item =>
+  cache.set(cacheKey(item.id), JSON.stringify(item)),
+);
+
 const Item = {
-  create: askify(ask => async ({ item: text }) => {
-    const id = await ask('db').run('INSERT INTO items (item) VALUES ($item)', {
+  create: connect(({ db }) => async ({ item: text }) => {
+    const id = await db.run('INSERT INTO items (item) VALUES ($item)', {
       $item: text,
     });
 
-    const item = await ask('db').get('SELECT * FROM items WHERE id = $id', {
+    const item = await db.get('SELECT * FROM items WHERE id = $id', {
       $id: id,
     });
 
-    const cached = await ask('cache').set(
-      cacheKey(item.id),
-      JSON.stringify(item),
-    );
+    const cached = await cacheItem(item);
 
     return cached && item;
   }),
 
-  delete: askify(ask => async ({ item }) => {
-    const deleted = await ask('db').run('DELETE FROM items WHERE id = $id', {
+  delete: connect(({ cache, db }) => async ({ item }) => {
+    const deleted = await db.run('DELETE FROM items WHERE id = $id', {
       $id: item.id,
     });
 
-    const cacheDeleted = await ask('cache').del(cacheKey(item.id));
+    const cacheDeleted = await cache.del(cacheKey(item.id));
 
     return deleted && cacheDeleted;
   }),
 
-  findAll: askify(ask => () =>
-    ask('db').all('SELECT * FROM items ORDER BY item'),
+  findAll: connect(({ db }) => async () =>
+    (await db.all('SELECT * FROM items ORDER BY item')).forEach(cacheItem),
   ),
 
-  findById: askify(ask => async ({ id }) => {
-    const cached = await ask('cache').get(cacheKey(id));
+  findById: connect(({ cache, db }) => async ({ id }) => {
+    const cached = await cache.get(cacheKey(id));
 
-    const find = ask('db').get('SELECT * FROM items WHERE id = $id', {
+    const find = db.get('SELECT * FROM items WHERE id = $id', {
       $id: id,
     });
 
-    const cache = item =>
-      ask('cache').set(cacheKey(item.id), JSON.stringify(item));
-
     return (
       (cached && JSON.parse(cached)) ||
-      find.then(async item => item && (await cache(item)) && item)
+      find.then(async item => item && (await cacheItem(item)) && item)
     );
   }),
 };

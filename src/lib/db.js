@@ -24,4 +24,4 @@ const dbInit = async () =>
 
 export { dbInit };
 
-export default () => promisifiedDb;
+export default promisifiedDb;
