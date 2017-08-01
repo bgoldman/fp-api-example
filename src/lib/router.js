@@ -3,22 +3,18 @@ import url from 'url';
 
 import { static as Immutable } from 'seamless-immutable';
 
-const define = (method, path, handler, routes) =>
-  Immutable.merge(
-    routes,
-    {
-      [method]: { [url.parse(path).pathname]: handler },
-    },
-    { deep: true },
-  );
+const addRoute = (method, path, handler, routes) =>
+  Immutable.merge(routes, { [method]: { [path]: handler } }, { deep: true });
 
-const createRouteMethods = {
-  get: (path, handler, routes) => define('get', path, handler, routes),
-  delete: (path, handler, routes) => define('delete', path, handler, routes),
-  patch: (path, handler, routes) => define('patch', path, handler, routes),
-  post: (path, handler, routes) => define('post', path, handler, routes),
-  put: (path, handler, routes) => define('put', path, handler, routes),
-};
+const router = (routes = {}) =>
+  Immutable.asObject(
+    ['delete', 'get', 'patch', 'post', 'put']
+      .map(method => [
+        method,
+        (path, handler) => router(addRoute(method, path, handler, routes)),
+      ])
+      .concat([['routes', () => routes]]),
+  );
 
 const respond = response => (code, body) =>
   response
@@ -43,14 +39,4 @@ const createRouter = routes => (request, response) => {
       });
 };
 
-const chain = routes =>
-  Object.entries(createRouteMethods)
-    .map(([method, createRoute]) => [
-      method,
-      (path, handler) => chain(createRoute(path, handler, routes)),
-    ])
-    .reduce((obj, [k, v]) => ({ ...obj, [k]: v }), { routes: () => routes });
-
-const router = chain({});
-
-export default api => createRouter(api(router).routes());
+export default api => createRouter(api(router()).routes());
