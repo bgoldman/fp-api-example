@@ -31,10 +31,9 @@ const main = async () => {
     .and(() =>
       controlFlow()
         .do(() =>
-          server.on('request', (request, response) => {
-            console.log('REQUEST');
-            route(request, responsify(response));
-          }),
+          server.on('request', (request, response) =>
+            route(request, responsify(response)),
+          ),
         )
         .and(() => log('Starting server...'))
         .and(() => server.listen(3200, 'localhost'))
