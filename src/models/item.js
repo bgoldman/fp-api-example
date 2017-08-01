@@ -32,7 +32,11 @@ const Item = {
   }),
 
   findAll: connect(({ db }) => async () =>
-    (await db.all('SELECT * FROM items ORDER BY item')).forEach(cacheItem),
+    Promise.all(
+      (await db.all('SELECT * FROM items ORDER BY item')).map(
+        async item => (await cacheItem(item)) && item,
+      ),
+    ),
   ),
 
   findById: connect(({ cache, db }) => async ({ id }) => {
