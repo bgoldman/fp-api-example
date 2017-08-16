@@ -16,13 +16,7 @@ const router = (routes = {}) =>
       .concat([['routes', () => routes]]),
   );
 
-const respond = response => (code, body) =>
-  response
-    .setHeader('Content-Type', 'application/json')
-    .statusCode(code)
-    .end(JSON.stringify(body));
-
-const createRouter = routes => (request, response) => {
+const createRouter = routes => (request, respond) => {
   const method = request.method.toLowerCase();
 
   const { pathname: path, search } = url.parse(request.url);
@@ -32,8 +26,8 @@ const createRouter = routes => (request, response) => {
   const query = qs.parse(search, { ignoreQueryPrefix: true });
 
   return handler
-    ? handler({ request: { ...request, query }, respond: respond(response) })
-    : respond(response)(404, {
+    ? handler({ request: { ...request, query }, respond })
+    : respond(404, {
         error: true,
         message: 'Route not found.',
       });

@@ -46,10 +46,9 @@ const Item = {
       $id: id,
     });
 
-    return (
-      (cached && JSON.parse(cached)) ||
-      find.then(async item => item && (await cacheItem(item)) && item)
-    );
+    return cached
+      ? JSON.parse(cached)
+      : find.then(item => (item ? cacheItem(item).then(item) : item));
   }),
 };
 

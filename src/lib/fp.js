@@ -1,5 +1,7 @@
 import sqlite3 from 'sqlite3';
 
+import IO from './io';
+
 const fpSqlite3 = {
   Database: connectionString => {
     // eslint-disable-next-line better/no-new
@@ -24,12 +26,12 @@ const fpSqlite3 = {
   },
 };
 
-const log = message => {
+const log = IO(message => {
   // eslint-disable-next-line fp/no-unused-expression, no-console
   console.log(message);
 
   return true;
-};
+});
 
 const responsify = response => ({
   end: body => response.end(body),

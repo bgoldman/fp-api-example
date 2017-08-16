@@ -8,41 +8,52 @@ import { log, responsify } from './src/lib/fp';
 import router from './src/lib/router';
 
 const main = async () => {
-  const server = http.createServer();
-
-  const dbConnected = await controlFlow()
-    .do(() => log('Connecting to db...'))
-    .and(dbInit)
-    .and(() => log('  ...connected.'))
-    .or(() => log('  ...failed!'))
+  const connectDb = controlFlow()
+    .do(log('Connecting to db...'))
+    //    .and(dbInit())
+    .and(io => io.join(log('  ...connected.')()))
+    .or(io => io.join(log('  ...failed!')()))
     .return(() => false);
 
-  const cacheConnected = await controlFlow()
-    .do(() => log('Connecting to cache...'))
+  console.log('run');
+  console.log('done', await (await connectDb).run());
+  return;
+
+  const connectCache = controlFlow()
+    .do(log('Connecting to cache...'))
     .and(cacheInit)
-    .and(() => log('  ...connected.'))
-    .or(() => log('  ... failed!'))
+    .and(log('  ...connected.'))
+    .or(log('  ... failed!'))
     .return(() => false);
 
   const route = router(api);
 
-  const started = await controlFlow()
-    .do(() => dbConnected && cacheConnected)
-    .and(() =>
-      controlFlow()
-        .do(() =>
-          server.on('request', (request, response) =>
-            route(request, responsify(response)),
-          ),
-        )
-        .and(() => log('Starting server...'))
-        .and(() => server.listen(3200, 'localhost'))
-        .and(() => log('  ...started.'))
-        .or(() => log('  ...failed!')),
-    )
-    .or(() => log('Not starting server'));
+  const send = (response, { code, body }) =>
+    responsify(response)
+      .setHeader('Content-Type', 'application/json')
+      .statusCode(code)
+      .end(JSON.stringify(body));
 
-  return started;
+  const server = http.createServer();
+
+  const startServer = controlFlow()
+    .do(() =>
+      server.on('request', async (request, response) =>
+        send(response, await route(request, (code, body) => ({ code, body }))),
+      ),
+    )
+    .and(log('Starting server...'))
+    .and(() => server.listen(3200, 'localhost'))
+    .and(log('  ...started.'))
+    .or(log('  ...failed!'));
+
+  const start = controlFlow()
+    .do(connectDb)
+    .and(connectCache)
+    .and(startServer)
+    .or(log('Not starting server.'));
+
+  return start.then();
 };
 
 main(); // eslint-disable-line fp/no-unused-expression
